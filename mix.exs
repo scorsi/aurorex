@@ -1,28 +1,48 @@
 defmodule Aurorex.MixProject do
   use Mix.Project
 
+  @binary_protocol_version 33
+  @version "0.0.1"
+
   def project do
     [
       app: :aurorex,
-      version: "0.1.0",
+      version: "0.0.1",
       elixir: "~> 1.6",
+
+      build_embedded: Mix.env == :prod,
       start_permanent: Mix.env() == :prod,
+
+      package: package(),
+      description: description(),
+
       deps: deps()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
+  defp package do
+    [
+      maintainers: ["Sylvain CORSINI"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/scorsi/aurorex"}
+    ]
+   end
+
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
+  defp description do
+    """
+    Elixir OrientDB Object Graph Mapping
+    """
+  end
+
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
+      {:connection, "~> 1.0.0"}
     ]
   end
 end
