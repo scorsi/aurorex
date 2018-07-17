@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  orientdb:
+      image: "orientdb:3.0.4"
+      ports:
+        - '2424:2424'
+        - '2480:2480'
+      volumes:
+        #- './data/config:/orientdb/config'
+        - './data/databases:/orientdb/databases'
+        - './data/backup:/orientdb/backup'
+      environment:
+        - ORIENTDB_ROOT_PASSWORD=rootpwd
