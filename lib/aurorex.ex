@@ -3,16 +3,12 @@ defmodule Aurorex do
   Documentation for Aurorex.
   """
 
-  @doc """
-  Hello world.
+  alias Aurorex.Connector.Client
 
-  ## Examples
-
-      iex> Aurorex.hello
-      :world
-
-  """
-  def hello do
-    :world
+  def main do
+    {:ok, pid} = Client.start_link "localhost", 2424, {}
+    Client.stop pid
   end
 end
+
+Aurorex.main()
