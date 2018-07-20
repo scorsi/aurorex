@@ -2,7 +2,6 @@ defmodule Aurorex.MixProject do
   use Mix.Project
 
   @binary_protocol_version 33
-  @version "0.0.1"
 
   def project do
     [
@@ -42,7 +41,8 @@ defmodule Aurorex.MixProject do
 
   defp deps do
     [
-      {:connection, "~> 1.0.0"}
+      {:connection, "~> 1.0.0"},
+      {:socket, "~> 0.3"},
     ]
   end
 end
