@@ -3,15 +3,24 @@ defmodule Aurorex.Connector.Client do
 
   require Logger
 
+  @socket_opts [:binary, active: false, packet: :raw]
+
   defmodule State do
-    defstruct socket: nil, pid: nil, from: nil, address: nil
+    defstruct socket: nil,
+              pid: nil,
+              session_id: nil,
+              opts: [],
+              protocol_version: nil
   end
 
   ## Client
 
-  def start_link(state) do
-    {:ok, pid} = Connection.start_link(__MODULE__, state)
-    {:ok, %State{Connection.call(pid, {:get_state}) | pid: pid}}
+  @spec start_link(Keyword.t) :: Connection.on_start
+  def start_link(opts) do
+    case Connection.start_link(__MODULE__, opts, name: :aurorex) do
+      {:ok, _pid} = res -> res
+      {:error, _msg} = err -> err
+    end
   end
 
   def send_msg(%State{pid: pid}, msg) do
@@ -19,19 +28,25 @@ defmodule Aurorex.Connector.Client do
   end
 
   def read_msg(%State{pid: pid}) do
-    Connection.call(pid, {:read_msg})
+    msg = Connection.call(pid, {:read_msg})
+    {:ok, msg}
   end
 
   ## Callbacks
 
-  def init([host: host, port: port] = address) do
-    socket = Socket.TCP.connect!(host, port)
-    {:ok, %State{socket: socket, address: address}}
+  def init(state) do
+    {:ok, socket} = :gen_tcp.connect('localhost', 2424, @socket_opts)
+    {:ok, %{state | socket: socket, pid: self()}}
   end
 
-  def init(_) do
-    {:error, "invalid parameters"}
-  end
+  # def init([host: host, port: port] = address) do
+  #   socket = Socket.TCP.connect!(host, port)
+  #   {:ok, %State{socket: socket, address: address}}
+  # end
+
+  # def init(_) do
+  #   {:error, "invalid parameters"}
+  # end
 
   def handle_call({:get_state}, _from, state) do
     {:noreply, state, state}
