@@ -9,25 +9,28 @@ defmodule Aurorex.Protocol.Command.Connect do
   alias Aurorex.Client
   alias Aurorex.Client.State
   alias Aurorex.Protocol.Codes
+  alias Aurorex.Protocol.Exception
   alias Aurorex.Protocol.Parser
 
   @serialization_protocol "ORecordSerializerBinary"
 
-  @spec execute(%State{}) :: {:ok, %{session_id: String.t(), token_id: String.t()}} | {:ko, any}
+  @spec execute(%State{}) ::
+          {:ok, %{session_id: String.t(), token_id: String.t()}}
+          | {:ko, Exception.t()}
   def execute(state) do
     opts = Parser.encode_list(get_opts(state))
     :ok = Client.send_msg(state, [Codes.get_code(:connect), opts])
 
     case Client.read_msg(state) do
       <<0>> <> data -> {:ok, parse(data)}
-      <<1>> <> error -> {:ko, error}
+      <<1>> <> error -> {:ko, Exception.parse(error)}
     end
   end
 
   def parse(data) do
-    {_last_session_id, rest} = Parser.decode(data, :int)
-    {new_session_id, rest} = Parser.decode(rest, :int)
-    {token_id, ""} = Parser.decode(rest, :bytes)
+    {_last_session_id, data} = Parser.decode(data, :int)
+    {new_session_id, data} = Parser.decode(data, :int)
+    {token_id, ""} = Parser.decode(data, :bytes)
     %{session_id: new_session_id, token_id: token_id}
   end
 
