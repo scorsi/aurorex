@@ -1,12 +1,14 @@
 defmodule Aurorex.MixProject do
   use Mix.Project
 
-  @binary_protocol_version 33
+  @client_name "Aurorex (Elixir client)"
+  @binary_protocol_version 36
+  @version "0.0.1"
 
   def project do
     [
       app: :aurorex,
-      version: "0.0.1",
+      version: @version,
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -26,7 +28,12 @@ defmodule Aurorex.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      env: [
+        client_name: @client_name,
+        binary_protocol_version: @binary_protocol_version,
+        version: @version
+      ]
     ]
   end
 
