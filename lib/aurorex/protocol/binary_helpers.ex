@@ -13,20 +13,20 @@ defmodule Aurorex.Protocol.BinaryHelpers do
   2 bytes
   """
   defmacro short do
-    quote do: 16-signed
+    quote do: 16 - signed
   end
 
   @doc """
   4 bytes
   """
   defmacro int do
-    quote do: 32-signed
+    quote do: 32 - signed
   end
 
   @doc """
   8 bytes
   """
   defmacro long do
-    quote do: 64-signed
+    quote do: 64 - signed
   end
 end
