@@ -9,6 +9,13 @@ defmodule Aurorex.Protocol.Parser do
           | {:int, integer}
           | {:long, integer}
 
+  def parse(state, parse_function) do
+    case Aurorex.Client.read_msg(state) do
+      <<0>> <> data -> {:ok, parse_function.(data)}
+      <<1>> <> error -> {:ko, Aurorex.Protocol.Exception.parse(error)}
+    end
+  end
+
   def encode({:byte, v}) do
     case v do
       1 -> <<1>>

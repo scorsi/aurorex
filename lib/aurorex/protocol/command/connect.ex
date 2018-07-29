@@ -21,10 +21,7 @@ defmodule Aurorex.Protocol.Command.Connect do
     opts = Parser.encode_list(get_opts(state))
     :ok = Client.send_msg(state, [Codes.get_code(:connect), opts])
 
-    case Client.read_msg(state) do
-      <<0>> <> data -> {:ok, parse(data)}
-      <<1>> <> error -> {:ko, Exception.parse(error)}
-    end
+    Parser.parse(state, &parse/1)
   end
 
   def parse(data) do
