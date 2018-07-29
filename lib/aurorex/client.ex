@@ -1,4 +1,4 @@
-defmodule Aurorex.Connector.Client do
+defmodule Aurorex.Client do
   use Connection
 
   require Logger
@@ -10,15 +10,17 @@ defmodule Aurorex.Connector.Client do
               pid: nil,
               session_id: nil,
               opts: [],
-              protocol_version: nil
+              protocol_version: nil,
+              host: nil,
+              port: nil
   end
 
   ## Client
 
-  @spec start_link(Keyword.t) :: Connection.on_start
+  @spec start_link(Keyword.t()) :: Connection.on_start()
   def start_link(opts) do
     case Connection.start_link(__MODULE__, opts, name: :aurorex) do
-      {:ok, _pid} = res -> res
+      {:ok, pid} -> {:ok, %State{pid: pid}}
       {:error, _msg} = err -> err
     end
   end
@@ -36,7 +38,7 @@ defmodule Aurorex.Connector.Client do
 
   def init(state) do
     {:ok, socket} = :gen_tcp.connect('localhost', 2424, @socket_opts)
-    {:ok, %{state | socket: socket, pid: self()}}
+    {:ok, %State{state | socket: socket, pid: self()}}
   end
 
   # def init([host: host, port: port] = address) do
@@ -52,32 +54,32 @@ defmodule Aurorex.Connector.Client do
     {:noreply, state, state}
   end
 
-  def handle_call({:send_msg, msg}, from, %State{socket: socket} = state) do
+  def handle_call({:send_msg, msg}, _from, %State{socket: socket} = state) do
     socket |> Socket.Stream.send!(msg)
-    {:noreply, nil, %State{state | from: from}}
+    {:noreply, nil, state}
   end
 
-  def handle_call({:read_msg}, from, %State{socket: socket} = state) do
-    msg = socket |> Socket.Stream.recv!
-    {:reply, msg, %State{state | from: from}}
+  def handle_call({:read_msg}, _from, %State{socket: socket} = state) do
+    msg = socket |> Socket.Stream.recv!()
+    {:reply, msg, state}
   end
 
   def handle_call(msg, from, state) do
-    IO.puts "handle_call"
-    IO.inspect msg
-    IO.inspect from
-    IO.inspect state
+    IO.puts("handle_call")
+    IO.inspect(msg)
+    IO.inspect(from)
+    IO.inspect(state)
   end
 
   def handle_cast(msg, state) do
-    IO.puts "handle_cast"
-    IO.inspect msg
-    IO.inspect state
+    IO.puts("handle_cast")
+    IO.inspect(msg)
+    IO.inspect(state)
   end
 
   def handle_info(msg, state) do
-    IO.puts "handle_info"
-    IO.inspect msg
-    IO.inspect state
+    IO.puts("handle_info")
+    IO.inspect(msg)
+    IO.inspect(state)
   end
 end
