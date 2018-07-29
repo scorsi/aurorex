@@ -2,12 +2,12 @@ defmodule Aurorex.Protocol.Parser do
   import Aurorex.Protocol.BinaryHelpers
 
   @type encodable_term ::
-    {:byte, byte}
-    | {:boolean, boolean}
-    | {:string, string}
-    | {:short, integer}
-    | {:int, integer}
-    | {:long, integer}
+          {:byte, byte}
+          | {:boolean, boolean}
+          | {:string, string}
+          | {:short, integer}
+          | {:int, integer}
+          | {:long, integer}
 
   def encode({:byte, v}) do
     case v do
@@ -48,7 +48,51 @@ defmodule Aurorex.Protocol.Parser do
     Enum.map(list, &encode/1)
   end
 
-  def encode_op(op, opts) do
+  def decode(<<data, rest::binary>>, :byte) do
+    {data, rest}
+  end
 
+  def decode(<<data, rest::binary>>, :boolean) do
+    case data do
+      1 -> {true, rest}
+      0 -> {false, rest}
+    end
+  end
+
+  def decode(<<data::short, rest::binary>>, :short) do
+    {data, rest}
+  end
+
+  def decode(<<data::int, rest::binary>>, :int) do
+    {data, rest}
+  end
+
+  def decode(<<data::long, rest::binary>>, :long) do
+    {data, rest}
+  end
+
+  def decode(<<0::int, rest::binary>>, :bytes) do
+    {nil, rest}
+  end
+
+  def decode(<<length::int, data::binary>>, :bytes) do
+    case data do
+      <<parsed::bytes-size(length), rest::binary>> -> {parsed, rest}
+      _ -> :incomplete
+    end
+  end
+
+  def decode(data, :string) do
+    case decode(data, :bytes) do
+      {parsed, rest} ->
+        if parsed == nil or String.valid?(parsed) do
+          {parsed, rest}
+        else
+          :incomplete
+        end
+
+      :incomplete ->
+        :incomplete
+    end
   end
 end
