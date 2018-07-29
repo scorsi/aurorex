@@ -9,7 +9,7 @@ defmodule Aurorex.Protocol.CheckProtocolVersion do
   @spec execute(%State{}) :: {:ok} | {:ko}
   def execute(state) do
     case Client.read_msg(state) do
-      {:ok, <<version::short>>} ->
+      <<version::short>> ->
         if version > @minimal_protocol_version do
           {:ok}
         else
