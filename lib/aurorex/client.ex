@@ -3,7 +3,7 @@ defmodule Aurorex.Client do
 
   require Logger
 
-  @socket_opts [:binary, active: false, packet: :raw]
+  @socket_opts [as: :binary, mode: :active, packet: :raw]
 
   defmodule State do
     defstruct socket: nil,
@@ -11,13 +11,19 @@ defmodule Aurorex.Client do
               session_id: nil,
               opts: [],
               protocol_version: nil,
-              host: nil,
-              port: nil
+              username: nil,
+              password: nil,
+              address: %{host: nil, port: nil}
   end
 
   ## Client
 
-  @spec start_link(Keyword.t()) :: Connection.on_start()
+  @spec connect(%State{}) :: Connection.on_start
+  def connect(opts) do
+    start_link(opts)
+  end
+
+  @spec start_link(Keyword.t()) :: Connection.on_start
   def start_link(opts) do
     case Connection.start_link(__MODULE__, opts, name: :aurorex) do
       {:ok, pid} -> {:ok, %State{pid: pid}}
@@ -36,8 +42,8 @@ defmodule Aurorex.Client do
 
   ## Callbacks
 
-  def init(state) do
-    {:ok, socket} = :gen_tcp.connect('localhost', 2424, @socket_opts)
+  def init(%State{address: %{host: host, port: port}} = state) do
+    socket = Socket.TCP.connect!(host, port, @socket_opts)
     {:ok, %State{state | socket: socket, pid: self()}}
   end
 
@@ -60,7 +66,7 @@ defmodule Aurorex.Client do
   end
 
   def handle_call({:read_msg}, _from, %State{socket: socket} = state) do
-    msg = socket |> Socket.Stream.recv!()
+    msg = socket |> Socket.Stream.recv!
     {:reply, msg, state}
   end
 
@@ -69,17 +75,20 @@ defmodule Aurorex.Client do
     IO.inspect(msg)
     IO.inspect(from)
     IO.inspect(state)
+    {:noreply}
   end
 
   def handle_cast(msg, state) do
     IO.puts("handle_cast")
     IO.inspect(msg)
     IO.inspect(state)
+    {:noreply}
   end
 
   def handle_info(msg, state) do
     IO.puts("handle_info")
     IO.inspect(msg)
     IO.inspect(state)
+    {:noreply}
   end
 end
