@@ -1,8 +1,10 @@
 defmodule Aurorex.Protocol.Command.Connect do
   @moduledoc """
   The REQUEST_CONNECT operation.
-  See: https://orientdb.com/docs/3.0.x/internals/Network-Binary-Protocol.html#requestconnect
+  See: https://orientdb.com/docs/3.0.x/internals/Network-Binary-Protocol.html#requestconnect.
   """
+
+  import Aurorex.Protocol.BinaryHelpers
 
   alias Aurorex.Client
   alias Aurorex.Client.State
@@ -11,10 +13,22 @@ defmodule Aurorex.Protocol.Command.Connect do
 
   @serialization_protocol "ORecordSerializerBinary"
 
-  @spec execute(%State{}) :: {:ok}
+  @spec execute(%State{}) :: {:ok, %{session_id: String.t(), token_id: String.t()}} | {:ko, any}
   def execute(state) do
-    IO.inspect([Codes.get_code(:connect), Parser.encode_list(get_opts(state))])
-    IO.inspect(Client.send_msg(state, [Codes.get_code(:connect), Parser.encode_list(get_opts(state))]))
+    opts = Parser.encode_list(get_opts(state))
+    :ok = Client.send_msg(state, [Codes.get_code(:connect), opts])
+
+    case Client.read_msg(state) do
+      <<0>> <> data -> {:ok, parse(data)}
+      <<1>> <> error -> {:ko, error}
+    end
+  end
+
+  def parse(data) do
+    {_last_session_id, rest} = Parser.decode(data, :int)
+    {new_session_id, rest} = Parser.decode(rest, :int)
+    {token_id, ""} = Parser.decode(rest, :bytes)
+    %{session_id: new_session_id, token_id: token_id}
   end
 
   defp get_opts(%State{username: username, password: password}) do
