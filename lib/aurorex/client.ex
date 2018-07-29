@@ -17,7 +17,7 @@ defmodule Aurorex.Client do
 
   ## Client
 
-  @spec start_link(Keyword.t()) :: {:ok, %State{}} | {:ko, any}
+  @spec connect(Keyword.t()) :: {:ok, %State{}} | {:ko, any}
   def connect(opts) do
     start_link(opts)
   end
@@ -44,7 +44,7 @@ defmodule Aurorex.Client do
   @doc false
   def init(%State{address: %{host: host, port: port}} = state) do
     {:ok, socket} = :gen_tcp.connect(String.to_charlist(host), port, @socket_opts)
-    {:ok, %State{state | socket: socket}}
+    {:ok, %State{state | socket: socket, pid: self()}}
   end
 
   @doc false
