@@ -8,13 +8,10 @@ defmodule Aurorex.MixProject do
       app: :aurorex,
       version: "0.0.1",
       elixir: "~> 1.6",
-
-      build_embedded: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-
       package: package(),
       description: description(),
-
       deps: deps()
     ]
   end
@@ -25,7 +22,7 @@ defmodule Aurorex.MixProject do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/scorsi/aurorex"}
     ]
-   end
+  end
 
   def application do
     [
@@ -42,7 +39,7 @@ defmodule Aurorex.MixProject do
   defp deps do
     [
       {:connection, "~> 1.0.0"},
-      {:socket, "~> 0.3"},
+      {:socket, "~> 0.3"}
     ]
   end
 end
